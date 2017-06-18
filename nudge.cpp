@@ -962,7 +962,7 @@ namespace {
 	};
 	
 	struct Rotation {
-		float v[3];
+		float3 v;
 		float s;
 	};
 	
@@ -1205,46 +1205,41 @@ static inline float3 cross(float3 a, float3 b) {
 }
 
 static inline float3 operator * (Rotation lhs, float3 rhs) {
-	float3 t = 2.0f * cross(make_float3(lhs.v), rhs);
-	return rhs + lhs.s * t + cross(make_float3(lhs.v), t);
+	float3 t = 2.0f * cross(lhs.v, rhs);
+	return rhs + lhs.s * t + cross(lhs.v, t);
 }
 
 static inline Rotation operator * (Rotation lhs, Rotation rhs) {
-	float3 v = make_float3(rhs.v)*lhs.s + make_float3(lhs.v)*rhs.s + cross(make_float3(lhs.v), make_float3(rhs.v));
-	Rotation r = {
-		{ v.x, v.y, v.z },
-		lhs.s*rhs.s - dot(make_float3(lhs.v), make_float3(rhs.v)),
-	};
+	float3 v = rhs.v*lhs.s + lhs.v*rhs.s + cross(lhs.v, rhs.v);
+	Rotation r = { v, lhs.s*rhs.s - dot(lhs.v, rhs.v) };
 	return r;
 }
 
 static inline Rotation normalize(Rotation r) {
-	float f = 1.0f / sqrtf(r.s*r.s + r.v[0]*r.v[0] + r.v[1]*r.v[1] + r.v[2]*r.v[2]);
-	r.v[0] *= f;
-	r.v[1] *= f;
-	r.v[2] *= f;
+	float f = 1.0f / sqrtf(r.s*r.s + r.v.x*r.v.x + r.v.y*r.v.y + r.v.z*r.v.z);
+	r.v *= f;
 	r.s *= f;
 	return r;
 }
 
 static inline Rotation inverse(Rotation r) {
-	r.v[0] = -r.v[0];
-	r.v[1] = -r.v[1];
-	r.v[2] = -r.v[2];
+	r.v.x = -r.v.x;
+	r.v.y = -r.v.y;
+	r.v.z = -r.v.z;
 	return r;
 }
 
 static inline float3x3 matrix(Rotation q) {
-	float kx = q.v[0] + q.v[0];
-	float ky = q.v[1] + q.v[1];
-	float kz = q.v[2] + q.v[2];
+	float kx = q.v.x + q.v.x;
+	float ky = q.v.y + q.v.y;
+	float kz = q.v.z + q.v.z;
 	
-	float xx = kx*q.v[0];
-	float yy = ky*q.v[1];
-	float zz = kz*q.v[2];
-	float xy = kx*q.v[1];
-	float xz = kx*q.v[2];
-	float yz = ky*q.v[2];
+	float xx = kx*q.v.x;
+	float yy = ky*q.v.y;
+	float zz = kz*q.v.z;
+	float xy = kx*q.v.y;
+	float xz = kx*q.v.z;
+	float yz = ky*q.v.z;
 	float sx = kx*q.s;
 	float sy = ky*q.s;
 	float sz = kz*q.s;
@@ -1264,7 +1259,7 @@ static inline Transform operator * (Transform lhs, Transform rhs) {
 	Transform r = {
 		{ p.x, p.y, p.z },
 		rhs.body,
-		{ q.v[0], q.v[1], q.v[2], q.s },
+		{ q.v.x, q.v.y, q.v.z, q.s },
 	};
 	return r;
 }
@@ -4995,33 +4990,26 @@ void advance(ActiveBodies active_bodies, BodyData bodies, float time_step) {
 			bodies.idle_counters[i] = 0;
 		}
 		
-		Rotation dr = {};
-		
-		dr.v[0] = angular_velocity.x;
-		dr.v[1] = angular_velocity.y;
-		dr.v[2] = angular_velocity.z;
+		Rotation dr = { angular_velocity };
 		
 		dr = dr * make_rotation(bodies.transforms[i].rotation);
-		
-		dr.v[0] *= half_time_step;
-		dr.v[1] *= half_time_step;
-		dr.v[2] *= half_time_step;
+		dr.v *= half_time_step;
 		dr.s *= half_time_step;
 		
 		bodies.transforms[i].position[0] += velocity.x * time_step;
 		bodies.transforms[i].position[1] += velocity.y * time_step;
 		bodies.transforms[i].position[2] += velocity.z * time_step;
 		
-		bodies.transforms[i].rotation[0] += dr.v[0];
-		bodies.transforms[i].rotation[1] += dr.v[1];
-		bodies.transforms[i].rotation[2] += dr.v[2];
+		bodies.transforms[i].rotation[0] += dr.v.x;
+		bodies.transforms[i].rotation[1] += dr.v.y;
+		bodies.transforms[i].rotation[2] += dr.v.z;
 		bodies.transforms[i].rotation[3] += dr.s;
 		
 		Rotation rotation = normalize(make_rotation(bodies.transforms[i].rotation));
 		
-		bodies.transforms[i].rotation[0] = rotation.v[0];
-		bodies.transforms[i].rotation[1] = rotation.v[1];
-		bodies.transforms[i].rotation[2] = rotation.v[2];
+		bodies.transforms[i].rotation[0] = rotation.v.x;
+		bodies.transforms[i].rotation[1] = rotation.v.y;
+		bodies.transforms[i].rotation[2] = rotation.v.z;
 		bodies.transforms[i].rotation[3] = rotation.s;
 	}
 }

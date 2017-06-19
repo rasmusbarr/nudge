@@ -1519,12 +1519,12 @@ static unsigned box_box_collide(uint32_t* pairs, unsigned pair_count, BoxCollide
 		
 		unsigned added = 0;
 		
-		for (unsigned i = 0; i < pair_count; i += 4) {
+		for (unsigned pair_offset = 0; pair_offset < pair_count; pair_offset += 4) {
 			// Load pairs.
-			unsigned pair0 = pairs[i+0];
-			unsigned pair1 = pairs[i+1];
-			unsigned pair2 = pairs[i+2];
-			unsigned pair3 = pairs[i+3];
+			unsigned pair0 = pairs[pair_offset+0];
+			unsigned pair1 = pairs[pair_offset+1];
+			unsigned pair2 = pairs[pair_offset+2];
+			unsigned pair3 = pairs[pair_offset+3];
 			
 			unsigned a0_index = pair0 & 0xffff;
 			unsigned b0_index = pair0 >> 16;
@@ -1659,7 +1659,7 @@ static unsigned box_box_collide(uint32_t* pairs, unsigned pair_count, BoxCollide
 			simd_float::store4(b_offset_array + 4, b_offset_y);
 			simd_float::store4(b_offset_array + 8, b_offset_z);
 			
-			simd4_float face_penetration = simd_float::load4(feature_penetrations + i);
+			simd4_float face_penetration = simd_float::load4(feature_penetrations + pair_offset);
 			
 			// Is an edge pair more separating?
 			NUDGE_ALIGNED(16) float edge_penetration_a[4*9];
@@ -1769,8 +1769,8 @@ static unsigned box_box_collide(uint32_t* pairs, unsigned pair_count, BoxCollide
 				unsigned index = first_set_bit(face);
 				face &= face-1;
 				
-				unsigned pair = pairs[i+index];
-				unsigned a_face = features[i+index];
+				unsigned pair = pairs[pair_offset + index];
+				unsigned a_face = features[pair_offset + index];
 				
 				unsigned a_index = pair & 0xffff;
 				unsigned b_index = pair >> 16;
@@ -2207,7 +2207,7 @@ static unsigned box_box_collide(uint32_t* pairs, unsigned pair_count, BoxCollide
 				unsigned index = first_set_bit(edge);
 				edge &= edge-1;
 				
-				unsigned pair = pairs[i+index];
+				unsigned pair = pairs[pair_offset + index];
 				unsigned edge_a = a_edge_array[index];
 				unsigned edge_b = b_edge_array[index];
 				
@@ -2925,7 +2925,7 @@ static inline void radix_sort_uint32(uint32_t* data, unsigned count, Arena tempo
 	}
 }
 
-template<unsigned data_stride, unsigned index_stride = 1, class T>
+template<unsigned data_stride, unsigned index_stride, class T>
 NUDGE_FORCEINLINE static void load4(const float* data, const T* indices,
 									simdv_float& d0, simdv_float& d1, simdv_float& d2, simdv_float& d3) {
 	static const unsigned stride_in_floats = data_stride/sizeof(float);
@@ -2970,7 +2970,7 @@ NUDGE_FORCEINLINE static void load4(const float* data, const T* indices,
 	simd128::transpose32(d0, d1, d2, d3);
 }
 
-template<unsigned data_stride, unsigned index_stride = 1, class T>
+template<unsigned data_stride, unsigned index_stride, class T>
 NUDGE_FORCEINLINE static void load8(const float* data, const T* indices,
 									simdv_float& d0, simdv_float& d1, simdv_float& d2, simdv_float& d3,
 									simdv_float& d4, simdv_float& d5, simdv_float& d6, simdv_float& d7) {
@@ -3027,7 +3027,7 @@ NUDGE_FORCEINLINE static void load8(const float* data, const T* indices,
 	simd128::transpose32(d4, d5, d6, d7);
 }
 
-template<unsigned data_stride, unsigned index_stride = 1, class T>
+template<unsigned data_stride, unsigned index_stride, class T>
 NUDGE_FORCEINLINE static void store8(float* data, const T* indices,
 									 simdv_float d0, simdv_float d1, simdv_float d2, simdv_float d3,
 									 simdv_float d4, simdv_float d5, simdv_float d6, simdv_float d7) {
@@ -3267,9 +3267,9 @@ void collide(ActiveBodies* active_bodies, ContactData* contacts, BodyData bodies
 	for (unsigned i = 0; i < count; i += simdv_width32) {
 		simdv_float min_x, min_y, min_z, min_w;
 		simdv_float max_x, max_y, max_z, max_w;
-		load8<sizeof(aos_bounds[0])>(&aos_bounds[0].min.x, sorted_indices + i,
-									min_x, min_y, min_z, min_w,
-									max_x, max_y, max_z, max_w);
+		load8<sizeof(aos_bounds[0]), 1>(&aos_bounds[0].min.x, sorted_indices + i,
+										min_x, min_y, min_z, min_w,
+										max_x, max_y, max_z, max_w);
 		
 		simd_float::storev(bounds[i >> simdv_width32_log2].min_x, min_x);
 		simd_float::storev(bounds[i >> simdv_width32_log2].max_x, max_x);
@@ -4444,9 +4444,9 @@ ContactConstraintData* setup_contact_constraints(ActiveBodies active_bodies, Con
 		
 		simdv_float position_x, position_y, position_z, penetration;
 		simdv_float normal_x, normal_y, normal_z, friction;
-		load8<sizeof(contacts.data[0])>((const float*)contacts.data, slot.indices,
-										position_x, position_y, position_z, penetration,
-										normal_x, normal_y, normal_z, friction);
+		load8<sizeof(contacts.data[0]), 1>((const float*)contacts.data, slot.indices,
+										   position_x, position_y, position_z, penetration,
+										   normal_x, normal_y, normal_z, friction);
 		
 		NUDGE_SIMDV_ALIGNED uint16_t ab_array[simdv_width32*2];
 		
@@ -4650,20 +4650,20 @@ ContactConstraintData* setup_contact_constraints(ActiveBodies active_bodies, Con
 		simd_float::storev(constraints[i].nb_z, nb_z);
 		
 		simdv_float cached_impulse_x, cached_impulse_y, cached_impulse_z, unused0;
-		load4<sizeof(impulses[0])>((const float*)impulses, slot.indices,
-								   cached_impulse_x, cached_impulse_y, cached_impulse_z, unused0);
+		load4<sizeof(impulses[0]), 1>((const float*)impulses, slot.indices,
+									  cached_impulse_x, cached_impulse_y, cached_impulse_z, unused0);
 		
 		simdv_float a_velocity_x, a_velocity_y, a_velocity_z;
 		simdv_float a_angular_velocity_x, a_angular_velocity_y, a_angular_velocity_z, a_angular_velocity_w;
-		load8<sizeof(bodies.momentum[0])>((const float*)bodies.momentum, constraints[i].a,
-										  a_velocity_x, a_velocity_y, a_velocity_z, a_mass_inverse,
-										  a_angular_velocity_x, a_angular_velocity_y, a_angular_velocity_z, a_angular_velocity_w);
+		load8<sizeof(bodies.momentum[0]), 1>((const float*)bodies.momentum, constraints[i].a,
+											 a_velocity_x, a_velocity_y, a_velocity_z, a_mass_inverse,
+											 a_angular_velocity_x, a_angular_velocity_y, a_angular_velocity_z, a_angular_velocity_w);
 		
 		simdv_float b_velocity_x, b_velocity_y, b_velocity_z;
 		simdv_float b_angular_velocity_x, b_angular_velocity_y, b_angular_velocity_z, b_angular_velocity_w;
-		load8<sizeof(bodies.momentum[0])>((const float*)bodies.momentum, constraints[i].b,
-										  b_velocity_x, b_velocity_y, b_velocity_z, b_mass_inverse,
-										  b_angular_velocity_x, b_angular_velocity_y, b_angular_velocity_z, b_angular_velocity_w);
+		load8<sizeof(bodies.momentum[0]), 1>((const float*)bodies.momentum, constraints[i].b,
+											 b_velocity_x, b_velocity_y, b_velocity_z, b_mass_inverse,
+											 b_angular_velocity_x, b_angular_velocity_y, b_angular_velocity_z, b_angular_velocity_w);
 		
 		simdv_float normal_impulse = simd_float::max(normal_x*cached_impulse_x + normal_y*cached_impulse_y + normal_z*cached_impulse_z, simd_float::zerov());
 		simdv_float max_friction_impulse = normal_impulse * friction;
@@ -4712,13 +4712,13 @@ ContactConstraintData* setup_contact_constraints(ActiveBodies active_bodies, Con
 		simd_float::storev(constraint_states[i].applied_friction_impulse_x, friction_impulse_x);
 		simd_float::storev(constraint_states[i].applied_friction_impulse_y, friction_impulse_y);
 		
-		store8<sizeof(bodies.momentum[0])>((float*)bodies.momentum, constraints[i].a,
-										   a_velocity_x, a_velocity_y, a_velocity_z, a_mass_inverse,
-										   a_angular_velocity_x, a_angular_velocity_y, a_angular_velocity_z, a_angular_velocity_w);
+		store8<sizeof(bodies.momentum[0]), 1>((float*)bodies.momentum, constraints[i].a,
+											  a_velocity_x, a_velocity_y, a_velocity_z, a_mass_inverse,
+											  a_angular_velocity_x, a_angular_velocity_y, a_angular_velocity_z, a_angular_velocity_w);
 		
-		store8<sizeof(bodies.momentum[0])>((float*)bodies.momentum, constraints[i].b,
-										   b_velocity_x, b_velocity_y, b_velocity_z, b_mass_inverse,
-										   b_angular_velocity_x, b_angular_velocity_y, b_angular_velocity_z, b_angular_velocity_w);
+		store8<sizeof(bodies.momentum[0]), 1>((float*)bodies.momentum, constraints[i].b,
+											  b_velocity_x, b_velocity_y, b_velocity_z, b_mass_inverse,
+											  b_angular_velocity_x, b_angular_velocity_y, b_angular_velocity_z, b_angular_velocity_w);
 	}
 	
 	data->constraint_batches = contact_slot_count;
@@ -4737,9 +4737,9 @@ void apply_impulses(ContactConstraintData* data, BodyData bodies) {
 		
 		simdv_float a_velocity_x, a_velocity_y, a_velocity_z, a_mass_inverse;
 		simdv_float a_angular_velocity_x, a_angular_velocity_y, a_angular_velocity_z, a_angular_velocity_w;
-		load8<sizeof(bodies.momentum[0])>((const float*)bodies.momentum, constraint.a,
-										  a_velocity_x, a_velocity_y, a_velocity_z, a_mass_inverse,
-										  a_angular_velocity_x, a_angular_velocity_y, a_angular_velocity_z, a_angular_velocity_w);
+		load8<sizeof(bodies.momentum[0]), 1>((const float*)bodies.momentum, constraint.a,
+											 a_velocity_x, a_velocity_y, a_velocity_z, a_mass_inverse,
+											 a_angular_velocity_x, a_angular_velocity_y, a_angular_velocity_z, a_angular_velocity_w);
 		
 		simdv_float pa_z = simd_float::loadv(constraint.pa_z);
 		simdv_float pa_x = simd_float::loadv(constraint.pa_x);
@@ -4751,9 +4751,9 @@ void apply_impulses(ContactConstraintData* data, BodyData bodies) {
 		
 		simdv_float b_velocity_x, b_velocity_y, b_velocity_z, b_mass_inverse;
 		simdv_float b_angular_velocity_x, b_angular_velocity_y, b_angular_velocity_z, b_angular_velocity_w;
-		load8<sizeof(bodies.momentum[0])>((const float*)bodies.momentum, constraint.b,
-										  b_velocity_x, b_velocity_y, b_velocity_z, b_mass_inverse,
-										  b_angular_velocity_x, b_angular_velocity_y, b_angular_velocity_z, b_angular_velocity_w);
+		load8<sizeof(bodies.momentum[0]), 1>((const float*)bodies.momentum, constraint.b,
+											 b_velocity_x, b_velocity_y, b_velocity_z, b_mass_inverse,
+											 b_angular_velocity_x, b_angular_velocity_y, b_angular_velocity_z, b_angular_velocity_w);
 		
 		simdv_float pb_z = simd_float::loadv(constraint.pb_z);
 		simdv_float pb_x = simd_float::loadv(constraint.pb_x);
@@ -4911,9 +4911,9 @@ void apply_impulses(ContactConstraintData* data, BodyData bodies) {
 		
 		a_angular_velocity_w = simd_float::zerov(); // Reduces register pressure.
 		
-		store8<sizeof(bodies.momentum[0])>((float*)bodies.momentum, constraint.a,
-										   a_velocity_x, a_velocity_y, a_velocity_z, a_mass_inverse,
-										   a_angular_velocity_x, a_angular_velocity_y, a_angular_velocity_z, a_angular_velocity_w);
+		store8<sizeof(bodies.momentum[0]), 1>((float*)bodies.momentum, constraint.a,
+											  a_velocity_x, a_velocity_y, a_velocity_z, a_mass_inverse,
+											  a_angular_velocity_x, a_angular_velocity_y, a_angular_velocity_z, a_angular_velocity_w);
 		
 		b_velocity_x = simd_float::madd(linear_impulse_x, b_mass_inverse, b_velocity_x);
 		b_velocity_y = simd_float::madd(linear_impulse_y, b_mass_inverse, b_velocity_y);
@@ -4937,9 +4937,9 @@ void apply_impulses(ContactConstraintData* data, BodyData bodies) {
 		
 		b_angular_velocity_w = simd_float::zerov(); // Reduces register pressure.
 		
-		store8<sizeof(bodies.momentum[0])>((float*)bodies.momentum, constraint.b,
-										   b_velocity_x, b_velocity_y, b_velocity_z, b_mass_inverse,
-										   b_angular_velocity_x, b_angular_velocity_y, b_angular_velocity_z, b_angular_velocity_w);
+		store8<sizeof(bodies.momentum[0]), 1>((float*)bodies.momentum, constraint.b,
+											  b_velocity_x, b_velocity_y, b_velocity_z, b_mass_inverse,
+											  b_angular_velocity_x, b_angular_velocity_y, b_angular_velocity_z, b_angular_velocity_w);
 	}
 }
 

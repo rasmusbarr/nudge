@@ -60,75 +60,75 @@ static const unsigned simdv_width32_log2 = 3;
 #endif
 
 #ifdef _WIN32
-inline __m128 operator - (__m128 a) {
+NUDGE_FORCEINLINE __m128 operator - (__m128 a) {
 	return _mm_xor_ps(a, _mm_set1_ps(-0.0f));
 }
 
-inline __m128 operator + (__m128 a, __m128 b) {
+NUDGE_FORCEINLINE __m128 operator + (__m128 a, __m128 b) {
 	return _mm_add_ps(a, b);
 }
 
-inline __m128 operator - (__m128 a, __m128 b) {
+NUDGE_FORCEINLINE __m128 operator - (__m128 a, __m128 b) {
 	return _mm_sub_ps(a, b);
 }
 
-inline __m128 operator * (__m128 a, __m128 b) {
+NUDGE_FORCEINLINE __m128 operator * (__m128 a, __m128 b) {
 	return _mm_mul_ps(a, b);
 }
 
-inline __m128 operator / (__m128 a, __m128 b) {
+NUDGE_FORCEINLINE __m128 operator / (__m128 a, __m128 b) {
 	return _mm_div_ps(a, b);
 }
 
-inline __m128& operator += (__m128& a, __m128 b) {
+NUDGE_FORCEINLINE __m128& operator += (__m128& a, __m128 b) {
 	return a = _mm_add_ps(a, b);
 }
 
-inline __m128& operator -= (__m128& a, __m128 b) {
+NUDGE_FORCEINLINE __m128& operator -= (__m128& a, __m128 b) {
 	return a = _mm_sub_ps(a, b);
 }
 
-inline __m128& operator *= (__m128& a, __m128 b) {
+NUDGE_FORCEINLINE __m128& operator *= (__m128& a, __m128 b) {
 	return a = _mm_mul_ps(a, b);
 }
 
-inline __m128& operator /= (__m128& a, __m128 b) {
+NUDGE_FORCEINLINE __m128& operator /= (__m128& a, __m128 b) {
 	return a = _mm_div_ps(a, b);
 }
 #ifdef __AVX2__
-inline __m256 operator - (__m256 a) {
+NUDGE_FORCEINLINE __m256 operator - (__m256 a) {
 	return _mm256_xor_ps(a, _mm256_set1_ps(-0.0f));
 }
 
-inline __m256 operator + (__m256 a, __m256 b) {
+NUDGE_FORCEINLINE __m256 operator + (__m256 a, __m256 b) {
 	return _mm256_add_ps(a, b);
 }
 
-inline __m256 operator - (__m256 a, __m256 b) {
+NUDGE_FORCEINLINE __m256 operator - (__m256 a, __m256 b) {
 	return _mm256_sub_ps(a, b);
 }
 
-inline __m256 operator * (__m256 a, __m256 b) {
+NUDGE_FORCEINLINE __m256 operator * (__m256 a, __m256 b) {
 	return _mm256_mul_ps(a, b);
 }
 
-inline __m256 operator / (__m256 a, __m256 b) {
+NUDGE_FORCEINLINE __m256 operator / (__m256 a, __m256 b) {
 	return _mm256_div_ps(a, b);
 }
 
-inline __m256& operator += (__m256& a, __m256 b) {
+NUDGE_FORCEINLINE __m256& operator += (__m256& a, __m256 b) {
 	return a = _mm256_add_ps(a, b);
 }
 
-inline __m256& operator -= (__m256& a, __m256 b) {
+NUDGE_FORCEINLINE __m256& operator -= (__m256& a, __m256 b) {
 	return a = _mm256_sub_ps(a, b);
 }
 
-inline __m256& operator *= (__m256& a, __m256 b) {
+NUDGE_FORCEINLINE __m256& operator *= (__m256& a, __m256 b) {
 	return a = _mm256_mul_ps(a, b);
 }
 
-inline __m256& operator /= (__m256& a, __m256 b) {
+NUDGE_FORCEINLINE __m256& operator /= (__m256& a, __m256 b) {
 	return a = _mm256_div_ps(a, b);
 }
 #endif

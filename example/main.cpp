@@ -30,9 +30,12 @@
 #ifdef __APPLE__
 #include <GLUT/GLUT.h>
 #include <OpenGL/gl.h>
-#else
+#elif defined(_WIN32)
 #include <GLUT/glut.h>
 #include <gl/gl.h>
+#else // Linux.
+#include <GL/glut.h>
+#include <GL/gl.h>
 #endif
 
 static const unsigned max_body_count = 2048;

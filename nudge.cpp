@@ -317,10 +317,6 @@ namespace simd_float {
 		return _mm_cmpge_ps(x, y);
 	}
 	
-	NUDGE_FORCEINLINE simd4_float cmp_lt(simd4_float x, simd4_float y) {
-		return _mm_cmplt_ps(x, y);
-	}
-	
 	NUDGE_FORCEINLINE simd4_float cmp_le(simd4_float x, simd4_float y) {
 		return _mm_cmple_ps(x, y);
 	}
@@ -343,10 +339,6 @@ namespace simd_float {
 }
 
 namespace simd_int32 {
-	NUDGE_FORCEINLINE int32_t extract_first_int(simd4_int32 x) {
-		return _mm_cvtsi128_si32(x);
-	}
-	
 	NUDGE_FORCEINLINE simd4_int32 zero4() {
 		return _mm_setzero_si128();
 	}
@@ -357,10 +349,6 @@ namespace simd_int32 {
 	
 	NUDGE_FORCEINLINE simd4_int32 make4(int32_t x, int32_t y, int32_t z, int32_t w) {
 		return _mm_setr_epi32(x, y, z, w);
-	}
-	
-	NUDGE_FORCEINLINE simd4_int32 broadcast_load4(const int32_t* p) {
-		return _mm_set1_epi32(*p);
 	}
 	
 	NUDGE_FORCEINLINE simd4_int32 load4(const int32_t* p) {
@@ -389,45 +377,16 @@ namespace simd_int32 {
 		return _mm_srli_epi32(x, bits);
 	}
 	
-	template<unsigned bits>
-	NUDGE_FORCEINLINE simd4_int32 shift_right_arith(simd4_int32 x) {
-		return _mm_srai_epi32(x, bits);
-	}
-	
 	NUDGE_FORCEINLINE simd4_int32 add(simd4_int32 x, simd4_int32 y) {
 		return _mm_add_epi32(x, y);
-	}
-	
-	NUDGE_FORCEINLINE simd4_int32 sub(simd4_int32 x, simd4_int32 y) {
-		return _mm_sub_epi32(x, y);
-	}
-	
-	NUDGE_FORCEINLINE simd4_int32 cmp_lt(simd4_int32 x, simd4_int32 y) {
-		return _mm_cmplt_epi32(x, y);
-	}
-	
-	NUDGE_FORCEINLINE simd4_int32 cmp_gt(simd4_int32 x, simd4_int32 y) {
-		return _mm_cmpgt_epi32(x, y);
 	}
 	
 	NUDGE_FORCEINLINE simd4_int32 cmp_eq(simd4_int32 x, simd4_int32 y) {
 		return _mm_cmpeq_epi32(x, y);
 	}
 	
-	NUDGE_FORCEINLINE simd4_int32 min(simd4_int32 x, simd4_int32 y) {
-		return _mm_min_epi32(x, y);
-	}
-	
-	NUDGE_FORCEINLINE simd4_int32 max(simd4_int32 x, simd4_int32 y) {
-		return _mm_max_epi32(x, y);
-	}
-	
 	NUDGE_FORCEINLINE simd4_float asfloat(simd4_int32 x) {
 		return _mm_castsi128_ps(x);
-	}
-	
-	NUDGE_FORCEINLINE simd4_float tofloat(simd4_int32 x) {
-		return _mm_cvtepi32_ps(x);
 	}
 }
 
@@ -666,10 +625,6 @@ namespace simd_float {
 		return _mm256_cmp_ps(x, y, _CMP_GE_OQ);
 	}
 	
-	NUDGE_FORCEINLINE simd8_float cmp_lt(simd8_float x, simd8_float y) {
-		return _mm256_cmp_ps(x, y, _CMP_LT_OQ);
-	}
-	
 	NUDGE_FORCEINLINE simd8_float cmp_le(simd8_float x, simd8_float y) {
 		return _mm256_cmp_ps(x, y, _CMP_LE_OQ);
 	}
@@ -692,10 +647,6 @@ namespace simd_float {
 }
 
 namespace simd_int32 {
-	NUDGE_FORCEINLINE int32_t extract_first_int(simd8_int32 x) {
-		return _mm_cvtsi128_si32(_mm256_castsi256_si128(x));
-	}
-	
 	NUDGE_FORCEINLINE simd8_int32 zero8() {
 		return _mm256_setzero_si256();
 	}
@@ -706,10 +657,6 @@ namespace simd_int32 {
 	
 	NUDGE_FORCEINLINE simd8_int32 make8(int32_t x0, int32_t y0, int32_t z0, int32_t w0, int32_t x1, int32_t y1, int32_t z1, int32_t w1) {
 		return _mm256_setr_epi32(x0, y0, z0, w0, x1, y1, z1, w1);
-	}
-	
-	NUDGE_FORCEINLINE simd8_int32 broadcast_load8(const int32_t* p) {
-		return _mm256_set1_epi32(*p);
 	}
 	
 	NUDGE_FORCEINLINE simd8_int32 load8(const int32_t* p) {
@@ -738,45 +685,16 @@ namespace simd_int32 {
 		return _mm256_srli_epi32(x, bits);
 	}
 	
-	template<unsigned bits>
-	NUDGE_FORCEINLINE simd8_int32 shift_right_arith(simd8_int32 x) {
-		return _mm256_srai_epi32(x, bits);
-	}
-	
 	NUDGE_FORCEINLINE simd8_int32 add(simd8_int32 x, simd8_int32 y) {
 		return _mm256_add_epi32(x, y);
-	}
-	
-	NUDGE_FORCEINLINE simd8_int32 sub(simd8_int32 x, simd8_int32 y) {
-		return _mm256_sub_epi32(x, y);
-	}
-	
-	NUDGE_FORCEINLINE simd8_int32 cmp_lt(simd8_int32 x, simd8_int32 y) {
-		return _mm256_cmpgt_epi32(y, x);
-	}
-	
-	NUDGE_FORCEINLINE simd8_int32 cmp_gt(simd8_int32 x, simd8_int32 y) {
-		return _mm256_cmpgt_epi32(x, y);
 	}
 	
 	NUDGE_FORCEINLINE simd8_int32 cmp_eq(simd8_int32 x, simd8_int32 y) {
 		return _mm256_cmpeq_epi32(x, y);
 	}
 	
-	NUDGE_FORCEINLINE simd8_int32 min(simd8_int32 x, simd8_int32 y) {
-		return _mm256_min_epi32(x, y);
-	}
-	
-	NUDGE_FORCEINLINE simd8_int32 max(simd8_int32 x, simd8_int32 y) {
-		return _mm256_max_epi32(x, y);
-	}
-	
 	NUDGE_FORCEINLINE simd8_float asfloat(simd8_int32 x) {
 		return _mm256_castsi256_ps(x);
-	}
-	
-	NUDGE_FORCEINLINE simd8_float tofloat(simd8_int32 x) {
-		return _mm256_cvtepi32_ps(x);
 	}
 }
 #endif
@@ -822,10 +740,6 @@ namespace simd_int32 {
 	
 	NUDGE_FORCEINLINE simdv_int32 makev(int32_t x) {
 		return make4(x);
-	}
-	
-	NUDGE_FORCEINLINE simdv_int32 broadcast_loadv(const int32_t* p) {
-		return broadcast_load4(p);
 	}
 	
 	NUDGE_FORCEINLINE simdv_int32 loadv(const int32_t* p) {
@@ -885,10 +799,6 @@ namespace simd_int32 {
 	
 	NUDGE_FORCEINLINE simdv_int32 makev(int32_t x) {
 		return make8(x);
-	}
-	
-	NUDGE_FORCEINLINE simdv_int32 broadcast_loadv(const int32_t* p) {
-		return broadcast_load8(p);
 	}
 	
 	NUDGE_FORCEINLINE simdv_int32 loadv(const int32_t* p) {

@@ -451,7 +451,7 @@ namespace simd256 {
 	
 	template<unsigned i0, unsigned i1>
 	NUDGE_FORCEINLINE simd8_float shuffle128(simd8_float x) {
-		return _mm256_permute2x128_si256(x, x, i0 | (i1 << 4));
+		return _mm256_castsi256_ps(_mm256_permute2x128_si256(_mm256_castps_si256(x), _mm256_castps_si256(x), i0 | (i1 << 4)));
 	}
 
 	template<unsigned i0, unsigned i1>

@@ -1831,7 +1831,7 @@ static unsigned box_box_collide(uint32_t* pairs, unsigned pair_count, BoxCollide
 						
 						corner_mask = _mm_packs_epi32(simd_float::asint(mask0), simd_float::asint(mask1));
 						
-						// Don't allow edge intesections if both vertices are inside.
+						// Don't allow edge intersections if both vertices are inside.
 						edge_mask = _mm_packs_epi32(simd_float::asint(simd::bitwise_and(simd128::shuffle32<3,2,0,2>(mask0), simd128::shuffle32<1,0,1,3>(mask0))),
 													simd_float::asint(simd::bitwise_and(simd128::shuffle32<1,3,2,3>(mask1), simd128::shuffle32<0,2,0,1>(mask1))));
 						
@@ -1946,7 +1946,7 @@ static unsigned box_box_collide(uint32_t* pairs, unsigned pair_count, BoxCollide
 					unsigned a_far_edge2 = y_far2*2 + ((edge_axis_winding >> (2 + y_far2)) & 1);
 					unsigned a_far_edge3 = y_far3*2 + ((edge_axis_winding >> (2 + y_far3)) & 1);
 					
-					// Map local edges to lables (so that faces can share an edge).
+					// Map local edges to labels (so that faces can share an edge).
 					// The 12 edges are tagged using two ordered points.
 					// We use the same trick as the vertex transform but do it for pairs of vertices (in correct order).
 					uint64_t a_edge_map = 0x1200362424003612llu >> (3 - a_face);
@@ -4021,7 +4021,7 @@ struct ContactImpulseData {
 ContactImpulseData* read_cached_impulses(ContactCache contact_cache, ContactData contacts, Arena* memory) {
 	ContactImpulseData* data = allocate_struct<ContactImpulseData>(memory, 64);
 	
-	// Sort contacts based on tag so that they can be quickly matched against the impulse cache.
+	// Sort contacts based on tag so that they can be quickly matched against the contact cache.
 	uint32_t* sorted_contacts = allocate_array<uint32_t>(memory, contacts.count, 16);
 	data->sorted_contacts = sorted_contacts;
 	{
@@ -4177,7 +4177,8 @@ ContactConstraintData* setup_contact_constraints(ActiveBodies active_bodies, Con
 	InertiaTransform* momentum_to_velocity = allocate_array<InertiaTransform>(memory, bodies.count, 32);
 	data->momentum_to_velocity = momentum_to_velocity;
 	
-	// TODO: Consider SIMD-optimizing this loop. Don't compute anything for inactive bodies.
+	// TODO: Consider SIMD-optimizing this loop.
+	// TODO: Don't compute anything for inactive bodies.
 	for (unsigned i = 0; i < bodies.count; ++i) {
 		Rotation rotation = make_rotation(bodies.transforms[i].rotation);
 		float3 inertia_inverse = make_float3(bodies.properties[i].inertia_inverse);

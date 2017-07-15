@@ -3778,11 +3778,11 @@ void collide(ActiveBodies* active_bodies, ContactData* contacts, BodyData bodies
 		a -= colliders.boxes.count;
 		b -= colliders.boxes.count;
 		
-		SphereCollider box = colliders.spheres.data[a];
-		SphereCollider sphere = colliders.spheres.data[b];
+		SphereCollider sphere_a = colliders.spheres.data[a];
+		SphereCollider sphere_b = colliders.spheres.data[b];
 		
 		contacts->tags[contacts->count] = (uint64_t)((colliders.spheres.transforms[a].body >> 16) | (colliders.spheres.transforms[b].body & 0xffff0000)) << 32;
-		contacts->count += sphere_sphere_collide(box, sphere, colliders.spheres.transforms[a], colliders.spheres.transforms[b], contacts->data + contacts->count, contacts->bodies + contacts->count);
+		contacts->count += sphere_sphere_collide(sphere_a, sphere_b, colliders.spheres.transforms[a], colliders.spheres.transforms[b], contacts->data + contacts->count, contacts->bodies + contacts->count);
 	}
 	
 	// Discard islands of inactive objects at a fine level.
